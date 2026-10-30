@@ -1,0 +1,264 @@
+/* ==========================================================
+   整理券ソフト  style.css
+   目次: 1.変数 / 2.ベース / 3.背景 / 4.レイアウト / 5.角の表示
+        6.整理券 / 7.発行リスト / 8.ボタン / 9.設定ボタン
+        10.ダイアログ / 11.縦向き / 12.モーション
+   ========================================================== */
+
+/* ---------- 1. 変数 ---------- */
+:root {
+  --font: "Hiragino Mincho ProN", "Hiragino Mincho Pro", "Yu Mincho", "YuMincho",
+          "Noto Serif JP", "Noto Serif CJK JP", "BIZ UDMincho", "MS PMincho", serif;
+
+  --text:  #f4f0e6;
+  --muted: #a8a294;
+  --hair:  rgba(255, 255, 255, .16);
+
+  /* アクセント色（背景画像を選ぶとJSが --accent-rgb を書き換える） */
+  --accent-rgb:  232, 193, 90;
+  --accent:      rgb(var(--accent-rgb));
+  --accent-line: rgba(var(--accent-rgb), .45);
+
+  --danger: #ee7a72;
+  --ok:     #80e0a4;
+
+  --pad:  clamp(16px, 3vmin, 36px);   /* 画面の余白 */
+  --side: min(36vw, 440px);           /* 右リストの幅 */
+  --tap:  48px;                       /* タッチしやすい最小サイズ */
+}
+
+/* ---------- 2. ベース ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  margin: 0;
+  background: #000;
+  color: var(--text);
+  font-family: var(--font);
+  -webkit-text-size-adjust: 100%;
+  overscroll-behavior: none;
+}
+body {
+  overflow: hidden;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;          /* ダブルタップ拡大を防ぐ */
+}
+
+/* ---------- 3. 背景 ---------- */
+.bg, .veil { position: fixed; inset: 0; pointer-events: none; }
+.bg {
+  background: radial-gradient(ellipse at 40% 40%, #1c160c 0%, #070605 60%, #000 100%) center / cover no-repeat;
+}
+.veil { background: #000; opacity: 0; }
+
+/* ---------- 4. レイアウト ---------- */
+.app {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--pad);
+  padding:
+    max(var(--pad), env(safe-area-inset-top))
+    max(var(--pad), env(safe-area-inset-right))
+    max(var(--pad), env(safe-area-inset-bottom))
+    max(var(--pad), env(safe-area-inset-left));
+}
+.top  { display: flex; justify-content: space-between; align-items: flex-start; }
+.main {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--side);
+  gap: calc(var(--pad) * 1.5);
+}
+
+/* ---------- 5. 角の表示 ---------- */
+.stat { display: flex; flex-direction: column; gap: 2px; text-shadow: 0 1px 12px rgba(0, 0, 0, .6); }
+.stat--right { align-items: flex-end; text-align: right; }
+.stat__k { font-size: clamp(11px, 1.5vw, 15px); letter-spacing: .2em; color: var(--muted); min-height: 1.2em; }
+.stat__v { font-size: clamp(28px, 4.4vw, 52px); font-weight: 600; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.stat__v small { margin-left: .2em; font-size: .5em; color: var(--muted); }
+
+/* ---------- 6. 整理券 ---------- */
+.ticket {
+  min-width: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center;
+  text-shadow: 0 2px 20px rgba(0, 0, 0, .6);
+}
+.eyebrow {
+  margin: 0;
+  display: flex; align-items: center; gap: 1em;
+  font-size: clamp(14px, 2vw, 24px);
+  letter-spacing: .5em; text-indent: .5em;
+  color: var(--muted);
+}
+.eyebrow::before, .eyebrow::after { content: ""; width: 2.4em; height: 1px; background: var(--accent-line); }
+
+.number {
+  margin: .1em 0 0;
+  font-size: min(22vw, 40vh);
+  font-weight: 700; line-height: 1.05; letter-spacing: .02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent);
+}
+.number.is-range { font-size: min(11vw, 26vh); }
+.number.is-empty { color: rgba(255, 255, 255, .22); }
+.number.is-pop   { animation: pop .28s ease-out; }
+
+.party { margin: 0; min-height: 1.3em; font-size: clamp(18px, 2.8vw, 34px); letter-spacing: .1em; }
+
+.wait {
+  min-width: min(60%, 420px);
+  margin-top: clamp(12px, 3vh, 36px);
+  padding-top: clamp(12px, 3vh, 32px);
+  border-top: 1px solid var(--accent-line);
+}
+.wait:empty { display: none; }
+.wait__label { margin: 0; font-size: clamp(14px, 2vw, 24px); letter-spacing: .18em; color: var(--muted); }
+.wait__time  { margin: .1em 0 0; font-size: clamp(30px, 5.4vw, 68px); font-weight: 700; letter-spacing: .06em; }
+.wait__time.is-ok { color: var(--ok); }
+
+/* 連続タップのまとめ時間バー */
+.win-bar { position: fixed; left: 0; bottom: 0; height: 3px; width: 0; background: var(--accent); pointer-events: none; }
+.win-bar.is-running { animation: shrink 1.5s linear forwards; }
+
+/* ---------- 7. 発行リスト ---------- */
+.side {
+  min-height: 0;
+  display: flex; flex-direction: column;
+  padding-left: var(--pad);
+  border-left: 1px solid var(--hair);
+}
+.side-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 12px; }
+.side-head h2 { margin: 0; font-size: clamp(14px, 1.8vw, 20px); font-weight: 600; letter-spacing: .3em; color: var(--muted); }
+
+.list {
+  flex: 1; min-height: 0;
+  margin: 0; padding: 0; list-style: none;
+  overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
+}
+.list-empty { padding: 28px 0; color: var(--muted); text-align: center; border-top: 1px solid var(--hair); }
+
+.item {
+  display: grid;
+  grid-template-columns: 2em auto minmax(0, 1fr) auto;
+  align-items: center; gap: 12px;
+  min-height: 60px; padding: 8px 0;
+  border-top: 1px solid var(--hair);
+}
+.item__serial { text-align: right; font-size: clamp(14px, 1.8vw, 20px); color: var(--muted); font-variant-numeric: tabular-nums; }
+.item__no     { font-size: clamp(22px, 2.8vw, 34px); font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.item__meta   { font-size: clamp(12px, 1.5vw, 17px); line-height: 1.5; color: var(--muted); }
+.item__meta b { font-weight: 600; color: var(--text); }
+.item.is-called { opacity: .5; }
+.item.is-called .item__no { color: var(--ok); }
+
+/* ---------- 8. ボタン ---------- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: var(--tap); min-width: var(--tap); padding: 0 1.1em;
+  font: inherit; font-size: clamp(14px, 1.7vw, 18px); letter-spacing: .1em;
+  color: var(--text); background: transparent;
+  border: 1px solid rgba(255, 255, 255, .3); border-radius: 2px;
+  cursor: pointer; touch-action: manipulation;
+}
+.btn:active { background: rgba(255, 255, 255, .14); }
+.btn--primary { color: #12100a; background: var(--accent); border-color: var(--accent); font-weight: 700; }
+.btn--primary:active { background: var(--accent); filter: brightness(.88); }
+.btn--danger { color: var(--danger); border-color: rgba(238, 122, 114, .55); }
+.btn--small  { min-height: 44px; padding: 0 .8em; }
+.btn--toggle[aria-pressed="true"] { color: #12100a; background: var(--accent); border-color: var(--accent); font-weight: 700; }
+@media (hover: hover) { .btn:hover { border-color: var(--accent); } }
+
+/* ---------- 9. 設定ボタン（目立たない） ---------- */
+.settings-btn {
+  position: fixed;
+  left: max(8px, env(safe-area-inset-left));
+  bottom: max(4px, env(safe-area-inset-bottom));
+  min-width: var(--tap); min-height: var(--tap); padding: 0 12px;
+  font: inherit; font-size: 13px; letter-spacing: .2em;
+  color: var(--text); background: none; border: 0; opacity: .28; cursor: pointer;
+}
+.settings-btn:active { opacity: .9; }
+@media (hover: hover) { .settings-btn:hover { opacity: .9; } }
+
+/* ---------- 10. ダイアログ ---------- */
+.overlay {
+  position: fixed; inset: 0; z-index: 10;
+  display: none; align-items: center; justify-content: center;
+  padding: var(--pad); background: rgba(0, 0, 0, .78);
+}
+.overlay.is-open { display: flex; }
+.overlay--top { z-index: 20; }
+
+.modal {
+  width: min(560px, 100%); max-height: 100%;
+  display: flex; flex-direction: column;
+  background: #0b0b0b; border: 1px solid var(--hair);
+}
+.modal-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; border-bottom: 1px solid var(--hair); }
+.modal-head h2 { margin: 0; font-size: clamp(16px, 2.2vw, 22px); font-weight: 600; letter-spacing: .3em; }
+.modal-body { display: flex; flex-direction: column; gap: 22px; padding: 20px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+
+.label { margin: 0 0 10px; font-size: 13px; font-weight: 400; letter-spacing: .2em; color: var(--muted); }
+.preview {
+  height: 96px; display: flex; align-items: center; justify-content: center;
+  background: #111 center / cover no-repeat; border: 1px solid var(--hair);
+  font-size: 14px; color: var(--muted);
+}
+.actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+input[type="range"] { width: 100%; height: var(--tap); accent-color: var(--accent); }
+.note { margin: 8px 0 0; font-size: 14px; color: var(--muted); }
+.msg { margin: 0; min-height: 1.2em; font-size: 14px; color: var(--danger); }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; opacity: 0; pointer-events: none; }
+
+/* debug画面（見た目より管理しやすさ優先） */
+.modal--debug { width: min(820px, 100%); font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+.modal--debug .modal-head h2 { font-size: 16px; letter-spacing: .1em; }
+.modal--debug .modal-body { gap: 14px; padding: 14px 16px; font-size: 14px; }
+.modal--debug section { padding-bottom: 14px; border-bottom: 1px dashed var(--hair); }
+.modal--debug .label { letter-spacing: .04em; }
+.modal--debug .btn { font-size: 14px; letter-spacing: .04em; }
+.input {
+  width: 100%; min-height: var(--tap); padding: 0 12px;
+  font: inherit; font-size: 16px;              /* 16px未満だとiPadで入力時に拡大される */
+  color: var(--text); background: #000;
+  border: 1px solid rgba(255, 255, 255, .3); border-radius: 2px;
+  -webkit-user-select: text; user-select: text;
+}
+.input:focus { outline: none; border-color: var(--accent); }
+.dbg-row { display: grid; grid-template-columns: 5em 1fr; align-items: center; gap: 8px; }
+.dbg-status { margin: 6px 0 12px; font-size: 13px; line-height: 1.6; color: var(--ok); word-break: break-all; }
+.dbg-status.is-ng { color: var(--danger); }
+.dbg-pre {
+  margin: 0; padding: 10px; font: inherit; font-size: 12px; line-height: 1.7;
+  white-space: pre-wrap; word-break: break-all;
+  background: rgba(255, 255, 255, .05);
+  -webkit-user-select: text; user-select: text;
+}
+.key-row { padding: 0 24px 8px; }
+.key-msg { padding: 0 24px 12px; text-align: center; }
+
+.confirm-text { margin: 0; padding: 28px 24px 20px; text-align: center; font-size: clamp(18px, 2.4vw, 24px); line-height: 1.8; }
+.confirm-text strong { color: var(--accent); }
+.confirm-actions { display: flex; gap: 12px; padding: 0 24px 24px; }
+.confirm-actions .btn { flex: 1; min-height: 52px; }
+
+/* ---------- 11. 縦向き（iPadを縦に置いたとき） ---------- */
+@media (orientation: portrait) {
+  .main { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) minmax(0, 42%); }
+  .number { font-size: min(36vw, 26vh); }
+  .number.is-range { font-size: min(19vw, 15vh); }
+  .side { padding: var(--pad) 0 0; border-left: 0; border-top: 1px solid var(--hair); }
+}
+
+/* ---------- 12. モーション ---------- */
+@keyframes pop    { from { transform: scale(1.06); opacity: .5; } to { transform: none; opacity: 1; } }
+@keyframes shrink { from { width: 100%; } to { width: 0; } }
+@media (prefers-reduced-motion: reduce) { .number.is-pop { animation: none; } }

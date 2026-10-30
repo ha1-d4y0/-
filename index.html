@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#000000">
+  <title>整理券</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- dinoモード（debug画面でONにしたときだけ効く） -->
+  <link rel="stylesheet" href="style-dino.css">
+</head>
+<body>
+
+  <!-- 背景（画像・暗さ） -->
+  <div class="bg" id="bg"></div>
+  <div class="veil" id="veil"></div>
+
+  <div class="app">
+
+    <!-- 角：待ち組数（左上）／現在時刻（右上） -->
+    <header class="top">
+      <div class="stat">
+        <span class="stat__k">待ち</span>
+        <span class="stat__v"><b id="queueNum">0</b><small>組</small></span>
+      </div>
+      <div class="stat stat--right">
+        <span class="stat__k" id="date"></span>
+        <span class="stat__v" id="time">--:--:--</span>
+      </div>
+    </header>
+
+    <main class="main">
+
+      <!-- 左：整理券番号 -->
+      <section class="ticket" aria-live="polite">
+        <p class="eyebrow">整理券番号</p>
+        <div class="number is-empty" id="num">---</div>
+        <p class="party" id="party"></p>
+        <div class="wait" id="wait"></div>
+      </section>
+
+      <!-- 右：発行リスト（通し番号つき） -->
+      <aside class="side">
+        <div class="side-head">
+          <h2>発行リスト</h2>
+          <button class="btn btn--primary" id="callNext" type="button">次の組を呼ぶ</button>
+        </div>
+        <ul class="list" id="list"></ul>
+      </aside>
+
+    </main>
+  </div>
+
+  <!-- 連続タップのまとめ時間バー -->
+  <div class="win-bar" id="win"></div>
+
+  <!-- 目立たないdebugボタン -->
+  <button class="settings-btn" id="setBtn" type="button" aria-label="debug">debug</button>
+
+  <!-- debug画面（見た目より管理しやすさ優先） -->
+  <div class="overlay" id="debugOv" role="dialog" aria-modal="true" aria-labelledby="debugTitle">
+    <div class="modal modal--debug">
+      <div class="modal-head">
+        <h2 id="debugTitle">debug</h2>
+        <button class="btn" id="closeDebug" type="button">閉じる</button>
+      </div>
+      <div class="modal-body">
+
+        <section>
+          <h3 class="label">mode</h3>
+          <button class="btn btn--toggle" id="dinoBtn" type="button" aria-pressed="false">dino OFF</button>
+        </section>
+
+        <section>
+          <h3 class="label">formula</h3>
+          <label class="dbg-row">
+            <span>default</span>
+            <input class="input" id="fDefault" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
+          </label>
+          <p class="dbg-status" id="sDefault"></p>
+          <label class="dbg-row">
+            <span>dino</span>
+            <input class="input" id="fDino" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
+          </label>
+          <p class="dbg-status" id="sDino"></p>
+          <div class="actions"><button class="btn" id="fReset" type="button">reset</button></div>
+        </section>
+
+        <section>
+          <h3 class="label">background</h3>
+          <div class="preview" id="preview">画像なし</div>
+          <div class="actions">
+            <label class="btn btn--primary" for="file">画像を選ぶ</label>
+            <input class="sr-only" type="file" id="file" accept="image/*">
+            <button class="btn" id="clearBg" type="button">画像を外す</button>
+          </div>
+          <h3 class="label" style="margin-top:14px">dim <span id="dimVal"></span>%</h3>
+          <input type="range" id="dim" min="0" max="90" step="5">
+        </section>
+
+        <section>
+          <h3 class="label">log</h3>
+          <div class="actions">
+            <button class="btn" id="exportLog" type="button">log</button>
+            <button class="btn" id="importLog" type="button">import</button>
+            <input class="sr-only" type="file" id="importFile" accept=".csv,text/csv">
+          </div>
+        </section>
+
+        <section>
+          <h3 class="label">state</h3>
+          <pre class="dbg-pre" id="dbgState"></pre>
+        </section>
+
+        <p class="msg" id="dbgMsg"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- キー入力（import用） -->
+  <div class="overlay overlay--top" id="keyOv" role="dialog" aria-modal="true">
+    <div class="modal">
+      <p class="confirm-text">key</p>
+      <div class="key-row">
+        <input class="input" id="keyInput" type="password" inputmode="numeric" autocomplete="off" aria-label="key">
+      </div>
+      <p class="msg key-msg" id="keyMsg"></p>
+      <div class="confirm-actions">
+        <button class="btn" id="keyCancel" type="button">キャンセル</button>
+        <button class="btn btn--primary" id="keyOk" type="button">開錠</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 確認ポップアップ（削除・import） -->
+  <div class="overlay overlay--top" id="confirmOv" role="alertdialog" aria-modal="true">
+    <div class="modal">
+      <p class="confirm-text" id="confirmText"></p>
+      <div class="confirm-actions">
+        <button class="btn" id="confirmNo" type="button">キャンセル</button>
+        <button class="btn btn--danger" id="confirmOk" type="button">削除する</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

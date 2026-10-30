@@ -1,0 +1,116 @@
+/* ==========================================================
+   style-dino.css  恐竜テーマ
+   設定で「恐竜テーマ：オン」にすると <html data-theme="dino"> になり、
+   このファイルの内容だけが style.css を上書きします（オフなら何も起きません）。
+
+   目次: 1.色・フォント・形 / 2.背景と足跡 / 3.整理券 / 4.リスト
+        5.ボタン・ダイアログ / 6.モーション
+   ※ 背景画像を選んだときの文字色は、これまで通り画像から自動で決まります。
+   ========================================================== */
+
+/* ---------- 1. 色・フォント・形 ---------- */
+:root[data-theme="dino"] {
+  --font: "Hiragino Maru Gothic ProN", "Hiragino Sans", "Yu Gothic UI", "Yu Gothic", "Meiryo", sans-serif;
+
+  --text:  #f1f7e6;
+  --muted: #a9c295;
+  --hair:  rgba(168, 224, 110, .24);
+
+  --accent-rgb: 166, 224, 90;     /* 若草色 */
+  --ok:         #ffd166;          /* 呼出済みは琥珀色 */
+  --radius:     16px;
+
+  /* 飾りの図形（マスク用） */
+  --foot: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cg fill='%23000'%3E%3Cellipse cx='32' cy='15' rx='6' ry='12'/%3E%3Cellipse cx='15' cy='27' rx='5' ry='11' transform='rotate(-30 15 27)'/%3E%3Cellipse cx='49' cy='27' rx='5' ry='11' transform='rotate(30 49 27)'/%3E%3Cellipse cx='32' cy='47' rx='13' ry='12'/%3E%3C/g%3E%3C/svg%3E");
+  --spike: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 10'%3E%3Cpath d='M1 10 L10 1 L19 10 Z'/%3E%3C/svg%3E");
+  --trail: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 360 360'%3E%3Cg fill='%23000'%3E%3Cg transform='translate(40 30) rotate(-20) scale(.8)'%3E%3Cellipse cx='32' cy='15' rx='6' ry='12'/%3E%3Cellipse cx='15' cy='27' rx='5' ry='11' transform='rotate(-30 15 27)'/%3E%3Cellipse cx='49' cy='27' rx='5' ry='11' transform='rotate(30 49 27)'/%3E%3Cellipse cx='32' cy='47' rx='13' ry='12'/%3E%3C/g%3E%3Cg transform='translate(210 130) rotate(15) scale(.8)'%3E%3Cellipse cx='32' cy='15' rx='6' ry='12'/%3E%3Cellipse cx='15' cy='27' rx='5' ry='11' transform='rotate(-30 15 27)'/%3E%3Cellipse cx='49' cy='27' rx='5' ry='11' transform='rotate(30 49 27)'/%3E%3Cellipse cx='32' cy='47' rx='13' ry='12'/%3E%3C/g%3E%3Cg transform='translate(70 250) rotate(-10) scale(.8)'%3E%3Cellipse cx='32' cy='15' rx='6' ry='12'/%3E%3Cellipse cx='15' cy='27' rx='5' ry='11' transform='rotate(-30 15 27)'/%3E%3Cellipse cx='49' cy='27' rx='5' ry='11' transform='rotate(30 49 27)'/%3E%3Cellipse cx='32' cy='47' rx='13' ry='12'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  --brachio: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 110'%3E%3Cg fill='%23000'%3E%3Cellipse cx='95' cy='62' rx='48' ry='24'/%3E%3Cpath d='M52 58 C30 58 14 68 4 84 C22 76 40 76 56 80 Z'/%3E%3Cpath d='M124 52 L148 12 L162 18 L142 62 Z'/%3E%3Cellipse cx='162' cy='12' rx='13' ry='7' transform='rotate(-15 162 12)'/%3E%3Crect x='58' y='76' width='14' height='28' rx='6'/%3E%3Crect x='80' y='80' width='14' height='24' rx='6'/%3E%3Crect x='104' y='80' width='14' height='24' rx='6'/%3E%3Crect x='126' y='76' width='14' height='28' rx='6'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* ---------- 2. 背景と足跡 ---------- */
+:root[data-theme="dino"] .bg {
+  background: radial-gradient(ellipse at 40% 30%, #14341c 0%, #09170d 60%, #030804 100%) center / cover no-repeat;
+}
+/* 画面いっぱいにうっすら足跡（色はアクセント色に連動） */
+:root[data-theme="dino"] .app::before {
+  content: "";
+  position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: var(--accent);
+  opacity: .07;
+  -webkit-mask: var(--trail) 0 0 / 360px 360px;
+          mask: var(--trail) 0 0 / 360px 360px;
+}
+
+/* ---------- 3. 整理券 ---------- */
+:root[data-theme="dino"] .stat__v { font-weight: 800; }
+:root[data-theme="dino"] .eyebrow { font-weight: 800; }
+/* 見出しの飾りを、線から足跡に */
+:root[data-theme="dino"] .eyebrow::before,
+:root[data-theme="dino"] .eyebrow::after {
+  width: 1.3em; height: 1.3em;
+  background: var(--accent);
+  -webkit-mask: var(--foot) center / contain no-repeat;
+          mask: var(--foot) center / contain no-repeat;
+}
+:root[data-theme="dino"] .eyebrow::before { transform: rotate(-18deg); }
+:root[data-theme="dino"] .eyebrow::after  { transform: rotate(18deg); }
+
+:root[data-theme="dino"] .number {
+  font-weight: 900;
+  text-shadow: 0 .05em 0 rgba(0, 0, 0, .5), 0 2px 22px rgba(0, 0, 0, .5);
+}
+:root[data-theme="dino"] .party { font-weight: 800; }
+
+/* 待ち時間の上の区切りを、背びれ（トゲ）に */
+:root[data-theme="dino"] .wait { border-top: 0; padding-top: 0; }
+:root[data-theme="dino"] .wait::before {
+  content: "";
+  display: block; height: 10px; margin-bottom: clamp(12px, 3vh, 28px);
+  background: var(--accent); opacity: .6;
+  -webkit-mask: var(--spike) repeat-x center / 20px 10px;
+          mask: var(--spike) repeat-x center / 20px 10px;
+}
+:root[data-theme="dino"] .wait__time { font-weight: 800; }
+
+/* 右下にうっすら首長竜のシルエット */
+:root[data-theme="dino"] .ticket { position: relative; }
+:root[data-theme="dino"] .ticket::after {
+  content: "";
+  position: absolute; right: 0; bottom: 0; z-index: -1; pointer-events: none;
+  width: min(46%, 320px); aspect-ratio: 200 / 110;
+  background: var(--accent); opacity: .12;
+  -webkit-mask: var(--brachio) center / contain no-repeat;
+          mask: var(--brachio) center / contain no-repeat;
+}
+
+/* ---------- 4. リスト ---------- */
+:root[data-theme="dino"] .side { border-left: 2px dashed var(--hair); }
+:root[data-theme="dino"] .side-head h2 { font-weight: 800; }
+:root[data-theme="dino"] .item {
+  margin-bottom: 8px; padding: 8px 12px;
+  border-top: 0; border-radius: var(--radius);
+  background: rgba(168, 224, 110, .08);
+}
+:root[data-theme="dino"] .item__no { font-weight: 900; }
+:root[data-theme="dino"] .list-empty { border-top: 0; }
+
+/* ---------- 5. ボタン・ダイアログ ---------- */
+:root[data-theme="dino"] .btn { border-radius: var(--radius); font-weight: 800; }
+:root[data-theme="dino"] .modal { background: #0b1a10; border-radius: 22px; overflow: hidden; }
+:root[data-theme="dino"] .modal-head h2 { font-weight: 800; }
+:root[data-theme="dino"] .preview { border-radius: 14px; }
+
+@media (orientation: portrait) {
+  :root[data-theme="dino"] .side { border-left: 0; border-top: 2px dashed var(--hair); }
+}
+
+/* ---------- 6. モーション（発行時にドスン） ---------- */
+@keyframes dino-stomp {
+  0%   { transform: scale(1.18) rotate(-2deg); opacity: .4; }
+  45%  { transform: scale(.96) rotate(1deg);   opacity: 1; }
+  100% { transform: none; }
+}
+:root[data-theme="dino"] .number.is-pop { animation: dino-stomp .4s ease-out; }
+@media (prefers-reduced-motion: reduce) {
+  :root[data-theme="dino"] .number.is-pop { animation: none; }
+}
